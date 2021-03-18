@@ -19,6 +19,7 @@ class Deputy(Document):
     instagram_username = StringField()
     twitter_username = StringField()
     facebook_username = StringField()
+  
 
 # class News(Document):
 #     id = IntField(primary_key=True)
@@ -38,3 +39,11 @@ class Tweet(Document):
     twitter_username = StringField()
     date = DateTimeField()
 
+    def to_json(self, context):
+        return{
+            'tweet_id' : context.id,
+            'deputy_id':  context.deputy_id,
+            'name': context.name,
+            'twitter_username': context.twitter_username,
+            'date': context.date
+        }
