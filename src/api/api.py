@@ -9,4 +9,10 @@ def index():
     for item in Tweet.objects:
         tweets = tweets + ' ' + item.twitter_username
 
-    return tweets
+@api.route('/test')
+def test():
+    message = ''
+    for item in DBTest.objects:
+        message = message + ' ' + item.message
+
+    return message
