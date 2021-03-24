@@ -9,16 +9,16 @@ jobs:
   container_name:
     runs-on: ubuntu-latest
     steps:
-      - name: Build etl_tse
+      - name: Build etl_twitter
         uses: fifsky/ssh-action@master
         with:
           command: |
             cd 
             cd CI
-            rm -rf etl_tse
-            git clone https://github.com/parlamentaqui/etl_tse/
-            cp envs/.env_tse etl_tse/.env
-            cd etl_tse
+            rm -rf etl_twitter
+            git clone https://github.com/parlamentaqui/etl_twitter/
+            cp envs/.env_twitter etl_twitter/.env
+            cd etl_twitter
             git checkout ${{ github.event.pull_request.head.ref }}
             python3 -m venv env
             source env/bin/activate
