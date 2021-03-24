@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from api.api import api
 
 load_dotenv()
-
+FAILT
 DB_USERNAME = os.getenv('DB_USERNAME')
 DB_PASSWORD = os.getenv('DB_PASSWORD')
 DB_HOST = os.getenv('DB_HOST')
