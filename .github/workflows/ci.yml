@@ -1,0 +1,31 @@
+name: Run CI Pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  container_name:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build etl_twitter
+        uses: fifsky/ssh-action@master
+        with:
+          command: |
+            cd 
+            cd CI
+            rm -rf etl_twitter
+            git clone https://github.com/parlamentaqui/etl_twitter/
+            cp envs/.env_twitter etl_twitter/.env
+            cd etl_twitter
+            git checkout ${{ github.event.pull_request.head.ref }}
+            python3 -m venv env
+            source env/bin/activate
+            pip install -r requirements.txt
+            nohup python src/app.py &
+            sleep 15
+            curl --fail 0.0.0.0:6003
+            kill -9 $(lsof -t -i:6003)
+          host: ${{ secrets.DO_HOST }}
+          pass: ${{ secrets.DO_PASSWORD }}

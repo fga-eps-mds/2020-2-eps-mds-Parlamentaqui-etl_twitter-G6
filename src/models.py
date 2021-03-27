@@ -32,6 +32,9 @@ class Deputy(Document):
 #     update_date = DateTimeField()
 #     source = StringField()
 
+class DBTest(Document):
+    message = StringField()
+
 class Tweet(Document):
     tweet_id = IntField(primary_key=True)
     deputy_id = IntField()

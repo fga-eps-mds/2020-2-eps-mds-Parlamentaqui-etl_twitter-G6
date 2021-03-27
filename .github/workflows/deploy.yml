@@ -1,0 +1,23 @@
+name: Run deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy etl_twitter to DigitalOcean
+        uses: fifsky/ssh-action@master
+        with:
+          command: |
+            cd 
+            rm -rf etl_twitter
+            git clone https://github.com/parlamentaqui/etl_twitter/
+            cp envs/.env_twitter etl_twitter/.env
+            cd etl_twitter
+            make start-prod
+          host: ${{ secrets.DO_HOST }}
+          pass: ${{ secrets.DO_PASSWORD }}
