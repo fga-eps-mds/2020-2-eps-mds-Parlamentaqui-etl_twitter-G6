@@ -8,6 +8,8 @@
 
 2- Copiar o conteudo de .env.dev (que já está no projeto) para esse novo .env criado
 
+2.1- Preencher os campos das chaves que ficaram sem valores no .env (na parte do Twitter) com as respectivas chaves e o token recebidos do cadastro da conta de desenvolvedor no Twitter 
+
 3- Caso tenha adicionado, removido ou atualizado algum módulo (componente) do `requirements.txt`, rode:
 
         make rebuild
