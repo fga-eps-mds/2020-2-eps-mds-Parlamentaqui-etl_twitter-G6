@@ -1,20 +1,16 @@
 from flask import Blueprint, jsonify
 from models import *
+from unidecode import unidecode
 import requests
 import os
 import json
+
 
 api = Blueprint('api', __name__, url_prefix='/api')
 BEARER_TOKEN_TWITTER = os.getenv('BEARER_TOKEN')
 
 # Token que autoriza a busca por dados na API do Twitter pelo protocolo OAuth 2.0 (somente infos publicas no Twitter)
 auth_header = {"Authorization": "Bearer {}".format(BEARER_TOKEN_TWITTER)}
-
-# @api.route('/tweets')
-# def index():
-#     tweets = ''
-#     for item in Tweet.objects:
-#         tweets = tweets + ' ' + item.twitter_username
 
 @api.route('/tweets')
 def index():
@@ -33,14 +29,41 @@ def test():
     return message
 
 # Rota que retorna infos de usernames especificos listados
-@api.route('/user_lookup')
+@api.route('/user_lookup_by_username')
 def user_lookup_by_username():
     #Parametros de busca
-    usernames = "usernames=ANAMARIABRAGA,varien"
 
-    r = requests.get(f"https://api.twitter.com/2/users/by?{usernames}", headers=auth_header) # POde ser que esteja faltando o '&' no final dessa url
+    # usernames = "usernames=ANAMARIABRAGA,varien"
+    usernames = "usernames="
+    cont = 0;
+
+    # Loop que preencherá o parâmetro da pesquisa, procurando se algum deputado é usuário do twitter (suporta até 100 usernames)
+    for item in Deputy.objects:
+        if cont < 100:
+            usernames = usernames + str(item.name).replace(" ", "")[0:13] + ","
+            cont += 1
+        else: 
+            usernames = usernames[:-1]
+            break
+        
+    # Retira possiveis acentuações nos names
+    usernames = unidecode(usernames).replace(".", "")
+
+    r = requests.get(f"https://api.twitter.com/2/users/by?{usernames}&user.fields=verified", headers=auth_header) # POde ser que esteja faltando o '&' no final dessa url
     
-    return r.json()
+    deputies_username_json = r.json()
+
+    # Adiciona todos os perfis que são verificados(que existem ou não estão suspensos)
+    deputies_verified = []
+
+    for item in deputies_username_json['data']:
+        if item['verified'] is True:
+            temp_json = item
+            print(temp_json)
+            deputies_verified.append(temp_json)    
+
+    # return r.json()
+    return jsonify(deputies_verified)
 
 # Rota que retorna até 10 tweets mais recentes do usuario indicado pelo seu id
 @api.route('/historico_tweets')
