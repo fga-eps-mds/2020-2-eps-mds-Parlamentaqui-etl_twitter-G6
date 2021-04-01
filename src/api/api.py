@@ -5,7 +5,6 @@ import requests
 import os
 import json
 
-
 api = Blueprint('api', __name__, url_prefix='/api')
 BEARER_TOKEN_TWITTER = os.getenv('BEARER_TOKEN')
 
@@ -28,16 +27,85 @@ def test():
 
     return message
 
+# Rota que faz uma requsição à API do Twitter e retorna os perfis que são verificados
+@api.route('/perfis_deputados_verificados')
+def encontra_perfis_verificados():
+    
+    # Separação de 100 usernames para cada requisição (já que existem 573 deputados no DB)
+    usernames = ["usernames=","usernames=","usernames=","usernames=","usernames=","usernames="]
+
+    cont = 0;
+    aux = 0;
+
+    # Recolhe os nomes dos deputados para colocar no paramêtro da requisição
+    for item in Deputy.objects:
+        if (cont % 100 != 0 or cont == 0) and cont != 572:
+            usernames[aux] = usernames[aux] + str(item.name).replace(" ", "")[0:13] + ","
+            cont += 1
+        elif cont % 100 == 0:
+            # Coloca no foramto correto 100 nomes de deputados para colocar na url da requisição
+            usernames[aux] = usernames[aux][:-1]
+            usernames[aux] = unidecode(usernames[aux]).replace(".", "").replace("'","").replace("-","")
+            
+            #Incrementa para poder iniciar mais 100 nomes já adicionando os deputados nas posições x00, preparando os pareametros da próxima requisição
+            aux += 1
+            usernames[aux] = usernames[aux] + str(item.name).replace(" ", "")[0:13] + ","
+            cont += 1
+        
+        #Caso do último deputado no DB (tirando os de teste)
+        else:
+            usernames[aux] = usernames[aux] + str(item.name).replace(" ", "")[0:13] + ","
+            usernames[aux] = usernames[aux][:-1]
+            usernames[aux] = unidecode(usernames[aux]).replace(".", "").replace("'","").replace("-","")
+            break
+
+    # Lista com todos os resultados de cada nome de deputado
+    json_deputies_usernames = []
+
+    # Adiciona o resultado (jsons) de cada requsição com seus devidos parâmetros na lista
+    for usernames_100 in usernames:
+        json_deputies_usernames.append(metodo_de_request(usernames_100))
+
+    # Lista com os deputados que são verificados
+    json_deputies_verified = []
+
+    # Procura os perfis que são verificados
+    for r_result in json_deputies_usernames:
+        for username in r_result['data']:
+            if username['verified'] is True:
+                json_deputies_verified.append(username)
+
+
+    # Retorma o JSON com os deputados que possuem perfis verificados no Twitter
+    return jsonify(json_deputies_verified)
+
+# Metodo que faz os requests pra API dos usernames do Twitter e retorna os resultados em JSON
+def metodo_de_request(usernames):
+    r = requests.get(f"https://api.twitter.com/2/users/by?{usernames}&user.fields=verified,url", headers=auth_header)
+    return r.json()
+
 # Rota que retorna infos de usernames especificos listados
 @api.route('/user_lookup_by_username')
 def user_lookup_by_username():
-    #Parametros de busca
 
+    # Parametros de busca:
+    # usernames = "usernames=ANAMARIABRAGA,varien"
+    usernames = "usernames="
+    cont = 0;
+    deputies_verified = []
+
+    for item in Deputy.objects:
+        cont += 1
+
+    print("TOTAL DEPUTADOS =", cont)
+
+    cont = 0
+    # Parametros de busca:
     # usernames = "usernames=ANAMARIABRAGA,varien"
     usernames = "usernames="
     cont = 0;
 
-    # Loop que preencherá o parâmetro da pesquisa, procurando se algum deputado é usuário do twitter (suporta até 100 usernames)
+    # Loop que preencherá o parâmetro de usernames da pesquisa, procurando se algum deputado é usuário do twitter (suporta até 100 usernames)
     for item in Deputy.objects:
         if cont < 100:
             usernames = usernames + str(item.name).replace(" ", "")[0:13] + ","
@@ -45,35 +113,35 @@ def user_lookup_by_username():
         else: 
             usernames = usernames[:-1]
             break
+    
+    if(cont < 100):
+        usernames = usernames[:-1]
+
+    print("\n", cont, "\n")
         
     # Retira possiveis acentuações nos names
     usernames = unidecode(usernames).replace(".", "")
 
-    r = requests.get(f"https://api.twitter.com/2/users/by?{usernames}&user.fields=verified", headers=auth_header) # POde ser que esteja faltando o '&' no final dessa url
+    r = requests.get(f"https://api.twitter.com/2/users/by?{usernames}&user.fields=verified,url", headers=auth_header) # POde ser que esteja faltando o '&' no final dessa url
     
     deputies_username_json = r.json()
 
     # Adiciona todos os perfis que são verificados(que existem ou não estão suspensos)
-    deputies_verified = []
+    for item_json in deputies_username_json['data']:
+        if item_json['verified'] is True:
+            temp_json = item_json
+            deputies_verified.append(temp_json)
 
-    for item in deputies_username_json['data']:
-        if item['verified'] is True:
-            temp_json = item
-            print(temp_json)
-            deputies_verified.append(temp_json)    
-
-    # return r.json()
     return jsonify(deputies_verified)
-
+    
 # Rota que retorna até 10 tweets mais recentes do usuario indicado pelo seu id
 @api.route('/historico_tweets')
 def busca_historico_tweets():
     
     user_id = 36679967 #ID da Ana Maria Braga
     # user_id = 2244994945
-    
-    params = get_params()
 
+    params = get_params()
 
     r = requests.get(f"https://api.twitter.com/2/users/{user_id}/tweets", headers=auth_header, params=params)
     
