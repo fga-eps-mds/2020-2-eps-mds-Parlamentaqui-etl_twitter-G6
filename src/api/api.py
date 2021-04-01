@@ -34,8 +34,8 @@ def encontra_perfis_verificados():
     # Separação de 100 usernames para cada requisição (já que existem 573 deputados no DB)
     usernames = ["usernames=","usernames=","usernames=","usernames=","usernames=","usernames="]
 
-    cont = 0;
-    aux = 0;
+    cont = 0
+    aux = 0
 
     # Recolhe os nomes dos deputados para colocar no paramêtro da requisição
     for item in Deputy.objects:
@@ -91,7 +91,7 @@ def user_lookup_by_username():
     # Parametros de busca:
     # usernames = "usernames=ANAMARIABRAGA,varien"
     usernames = "usernames="
-    cont = 0;
+    cont = 0
     deputies_verified = []
 
     for item in Deputy.objects:
@@ -103,7 +103,7 @@ def user_lookup_by_username():
     # Parametros de busca:
     # usernames = "usernames=ANAMARIABRAGA,varien"
     usernames = "usernames="
-    cont = 0;
+    cont = 0
 
     # Loop que preencherá o parâmetro de usernames da pesquisa, procurando se algum deputado é usuário do twitter (suporta até 100 usernames)
     for item in Deputy.objects:
@@ -134,19 +134,7 @@ def user_lookup_by_username():
 
     return jsonify(deputies_verified)
     
-# Rota que retorna até 10 tweets mais recentes do usuario indicado pelo seu id
-@api.route('/historico_tweets')
-def busca_historico_tweets():
     
-    user_id = 36679967 #ID da Ana Maria Braga
-    # user_id = 2244994945
-
-    params = get_params()
-
-    r = requests.get(f"https://api.twitter.com/2/users/{user_id}/tweets", headers=auth_header, params=params)
-    
-    return r.json()
-
 # Pega parâmetros de informações que serão trazidas dos tweets
 def get_params():
     # Tweet fields are adjustable.
@@ -180,7 +168,81 @@ def get_params_2():
     # source, text, and withheld
     return {"tweet.fields": "created_at,possibly_sensitive,lang"} # Para adicionar mais campos, só precisa coloacar a virgula sem espaço e um/ou mais dos parametros listados dentro do metodo
 
+#Atualiza o banco de dados do twitter
+@api.route('/update_twitter_accounts')
+def update_twitter_accounts():
+    for item in Deputy.objects:
 
-@api.route('/atualizar_tweets')
-def atualizar_tweets():
-    pass
+        #verificar se o edputado já tem seu twitter vinculado, se tiver, só passa pro próximo
+        if item.twitter_username or item.twitter_id:
+            continue
+
+        #criar as chaves para pesquisa
+        deputy_name = item.name
+        deputy_name = unidecode(deputy_name).replace(".", "").replace("'","").replace("-","").replace(" ", "")[0:13]
+
+        deputy_full_name = item.full_name
+        deputy_full_name = unidecode(deputy_full_name).replace(".", "").replace("'","").replace("-","").replace(" ", "")[0:13]
+
+        usernames_to_found = deputy_name + "," + deputy_full_name
+        r = requests.get(f"https://api.twitter.com/2/users/by?usernames={usernames_to_found}&user.fields=verified,url", headers=auth_header)
+
+        #caso a resposta seja nula, ignorar esse deputado
+        if not r:
+            print("Essa request não tem uma response") 
+            continue 
+
+        deputy_twitter_json = r.json()
+
+        #criar uma ctring para conseguir verificar se ele possue a chave data
+        json_in_string = str(deputy_twitter_json)
+        
+        # if deputy_twitter_json.optString("data"):
+        if "data" in json_in_string:
+            #encontramos um deputado com conta
+
+            for all_usermaes_fouded in deputy_twitter_json["data"]:
+                if all_usermaes_fouded["verified"]:
+                    #conta verificada, adicionar no item
+                    item.twitter_username = all_usermaes_fouded["username"]
+                    item.twitter_id = all_usermaes_fouded["id"]
+                    
+                    if len(all_usermaes_fouded["url"]) > 5:
+                        item.website = all_usermaes_fouded["url"]
+                    
+                    item.save()
+                    break
+    
+    return "Done. Use url api/get_all_deputies for get all the deputies in db"
+
+# Rota que retorna até 10 tweets mais recentes do usuario indicado pelo seu id
+@api.route('/update_tweets')
+def update_tweets():
+    
+    # for item in Deputy.objects:
+        
+    #     if item.twitter_id:
+    #         r = requests.get(f"https://api.twitter.com/2/users/{user_id}/tweets", headers=auth_header, params=params)
+
+    #         if not r:
+    #             continue
+            
+    #         last_10_tweets_json = r.json()
+
+
+    user_id = 36679967 #ID da Ana Maria Braga
+    # user_id = 2244994945
+
+    params = get_params()
+
+    r = requests.get(f"https://api.twitter.com/2/users/{user_id}/tweets", headers=auth_header, params=params)
+    
+    return r.json()
+
+@api.route('/get_all_deputies')
+def get_all_deputies():
+    t = []
+    for item in Deputy.objects:
+        t.append(item.to_json())
+
+    return jsonify(t)
