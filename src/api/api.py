@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify
 from models import *
 from unidecode import unidecode
+from datetime import datetime
 import requests
 import os
 import json
@@ -11,13 +12,6 @@ BEARER_TOKEN_TWITTER = os.getenv('BEARER_TOKEN')
 # Token que autoriza a busca por dados na API do Twitter pelo protocolo OAuth 2.0 (somente infos publicas no Twitter)
 auth_header = {"Authorization": "Bearer {}".format(BEARER_TOKEN_TWITTER)}
 
-@api.route('/tweets')
-def index():
-    tweets = []
-    for item in Tweet.objects:
-        tweets.append(item.to_json(item))
-
-    return jsonify(tweets)
 
 @api.route('/test')
 def test():
@@ -27,9 +21,9 @@ def test():
 
     return message
 
-# Rota que faz uma requsição à API do Twitter e retorna os perfis que são verificados
-@api.route('/perfis_deputados_verificados')
-def encontra_perfis_verificados():
+# Rota que faz uma requsição à API do Twitter e retorna os perfis que são verificados (100 por vez)
+@api.route('/perfis_deputados_verificados_100')
+def encontra_perfis_verificados_100():
     
     # Separação de 100 usernames para cada requisição (já que existem 573 deputados no DB)
     usernames = ["usernames=","usernames=","usernames=","usernames=","usernames=","usernames="]
@@ -84,68 +78,6 @@ def metodo_de_request(usernames):
     r = requests.get(f"https://api.twitter.com/2/users/by?{usernames}&user.fields=verified,url", headers=auth_header)
     return r.json()
 
-# Rota que retorna infos de usernames especificos listados
-@api.route('/user_lookup_by_username')
-def user_lookup_by_username():
-
-    # Parametros de busca:
-    # usernames = "usernames=ANAMARIABRAGA,varien"
-    usernames = "usernames="
-    cont = 0
-    deputies_verified = []
-
-    for item in Deputy.objects:
-        cont += 1
-
-    print("TOTAL DEPUTADOS =", cont)
-
-    cont = 0
-    # Parametros de busca:
-    # usernames = "usernames=ANAMARIABRAGA,varien"
-    usernames = "usernames="
-    cont = 0
-
-    # Loop que preencherá o parâmetro de usernames da pesquisa, procurando se algum deputado é usuário do twitter (suporta até 100 usernames)
-    for item in Deputy.objects:
-        if cont < 100:
-            usernames = usernames + str(item.name).replace(" ", "")[0:13] + ","
-            cont += 1
-        else: 
-            usernames = usernames[:-1]
-            break
-    
-    if(cont < 100):
-        usernames = usernames[:-1]
-
-    print("\n", cont, "\n")
-        
-    # Retira possiveis acentuações nos names
-    usernames = unidecode(usernames).replace(".", "")
-
-    r = requests.get(f"https://api.twitter.com/2/users/by?{usernames}&user.fields=verified,url", headers=auth_header) # POde ser que esteja faltando o '&' no final dessa url
-    
-    deputies_username_json = r.json()
-
-    # Adiciona todos os perfis que são verificados(que existem ou não estão suspensos)
-    for item_json in deputies_username_json['data']:
-        if item_json['verified'] is True:
-            temp_json = item_json
-            deputies_verified.append(temp_json)
-
-    return jsonify(deputies_verified)
-    
-    
-# Pega parâmetros de informações que serão trazidas dos tweets
-def get_params():
-    # Tweet fields are adjustable.
-    # Options include:
-    # attachments, author_id, context_annotations,
-    # conversation_id, created_at, entities, geo, id,
-    # in_reply_to_user_id, lang, non_public_metrics, organic_metrics,
-    # possibly_sensitive, promoted_metrics, public_metrics, referenced_tweets,
-    # source, text, and withheld
-    return {"tweet.fields": "created_at,possibly_sensitive,lang"} # Para adicionar mais campos, só precisa coloacar a virgula sem espaço e um/ou mais dos parametros listados dentro do metodo
-
 # Rota que retorna um tweet especifico pelo seu id
 @api.route('/tweets_por_ids')
 def busca_historico_tweet_por_id():
@@ -157,18 +89,9 @@ def busca_historico_tweet_por_id():
     
     return r.json()
 
-# Pega parâmetros de informações que serão trazidas dos tweets (versao dessa rota)
-def get_params_2():
-    # Tweet fields are adjustable.
-    # Options include:
-    # attachments, author_id, context_annotations,
-    # conversation_id, created_at, entities, geo, id,
-    # in_reply_to_user_id, lang, non_public_metrics, organic_metrics,
-    # possibly_sensitive, promoted_metrics, public_metrics, referenced_tweets,
-    # source, text, and withheld
-    return {"tweet.fields": "created_at,possibly_sensitive,lang"} # Para adicionar mais campos, só precisa coloacar a virgula sem espaço e um/ou mais dos parametros listados dentro do metodo
 
-#Atualiza o banco de dados do twitter
+
+# Atualiza o banco de dados do twitter, colocando o username em deputados que possuem uma conta verificada
 @api.route('/update_twitter_accounts')
 def update_twitter_accounts():
     for item in Deputy.objects:
@@ -194,7 +117,7 @@ def update_twitter_accounts():
 
         deputy_twitter_json = r.json()
 
-        #criar uma ctring para conseguir verificar se ele possue a chave data
+        # Criar uma String para conseguir verificar se ele possue a chave data
         json_in_string = str(deputy_twitter_json)
         
         # if deputy_twitter_json.optString("data"):
@@ -215,30 +138,49 @@ def update_twitter_accounts():
     
     return "Done. Use url api/get_all_deputies for get all the deputies in db"
 
-# Rota que retorna até 10 tweets mais recentes do usuario indicado pelo seu id
+
+# Rota que popula a classe Tweet com até 10 tweets mais recentes por usuario indicado pelo seu id
 @api.route('/update_tweets')
 def update_tweets():
-    
-    # for item in Deputy.objects:
+
+    params = get_params_2()
+
+    for deputy in Deputy.objects:
         
-    #     if item.twitter_id:
-    #         r = requests.get(f"https://api.twitter.com/2/users/{user_id}/tweets", headers=auth_header, params=params)
+        if deputy.twitter_id:
+            r = requests.get(f"https://api.twitter.com/2/users/{deputy.twitter_id}/tweets", headers=auth_header, params=params)
 
-    #         if not r:
-    #             continue
+            if not r:
+                continue
             
-    #         last_10_tweets_json = r.json()
+            last_10_tweets_json = r.json()['data']
 
+            for tweet_json in last_10_tweets_json:
+                need_create = True
+                
+                for tweet_item in Tweet.objects:
+                    if int(tweet_item.tweet_id) == int(tweet_json['id']):
+                        need_create = False
+                        break
 
-    user_id = 36679967 #ID da Ana Maria Braga
-    # user_id = 2244994945
+                if not need_create:
+                    continue
 
-    params = get_params()
+                new_tweet = Tweet(
+                    tweet_id = tweet_json['id'],
+                    deputy_id = deputy.id,
+                    name = deputy.name,
+                    twitter_username = deputy.twitter_username,
+                    date = datetime.strptime(str(tweet_json["created_at"][0:18]), '%Y-%m-%dT%H:%M:%S') if tweet_json["created_at"] is not None else None,
+                ).save()
 
-    r = requests.get(f"https://api.twitter.com/2/users/{user_id}/tweets", headers=auth_header, params=params)
-    
-    return r.json()
+    return "Updated tweets sucessfully. Now use /get_tweets to see the tweets"
 
+# Pega parâmetros de informações que serão trazidas dos tweets (versao dessa rota)
+def get_params_2():
+    return "tweet.fields=created_at,id,author_id,text"
+
+# Rota que retorna a informação de todos os deputados salvos no DB
 @api.route('/get_all_deputies')
 def get_all_deputies():
     t = []
@@ -246,3 +188,18 @@ def get_all_deputies():
         t.append(item.to_json())
 
     return jsonify(t)
+
+# Rota que apaga todos os objetos Tweets salvos no BD
+@api.route('/get_all_tweets')
+def index():
+    tweets = []
+    for item in Tweet.objects:
+        tweets.append(item.to_json())
+
+    return jsonify(tweets)
+
+# Rota que deldeta todos os objetos Tweets salvos no BD
+@api.route('/delete_all_tweets')
+def delete_all_tweets():    
+    Tweet.objects.all().delete()
+    return "All tweets were deleted"

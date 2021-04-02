@@ -67,11 +67,11 @@ class Tweet(Document):
     twitter_username = StringField()
     date = DateTimeField()
 
-    def to_json(self, context):
+    def to_json(self):
         return {
-            'tweet_id':context.tweet_id,
-            'deputy_id':context.deputy_id,
-            'name':context.name,
-            'twitter_username':context.twitter_username,
-            'date':context.date
+            'tweet_id':self.tweet_id,
+            'deputy_id':self.deputy_id,
+            'name':self.name,
+            'twitter_username':self.twitter_username,
+            'date':self.date
         }
