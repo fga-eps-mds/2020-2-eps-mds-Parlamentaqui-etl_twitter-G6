@@ -4,6 +4,7 @@ from unidecode import unidecode
 from datetime import datetime
 import requests
 import os
+from operator import attrgetter
 import json
 
 api = Blueprint('api', __name__, url_prefix='/api')
@@ -13,13 +14,20 @@ BEARER_TOKEN_TWITTER = os.getenv('BEARER_TOKEN')
 auth_header = {"Authorization": "Bearer {}".format(BEARER_TOKEN_TWITTER)}
 
 
-@api.route('/test')
-def test():
-    message = ''
-    for item in DBTest.objects:
-        message = message + ' ' + item.message
-
-    return message
+@api.route('/tweets')
+def tweets():
+    
+    all_tweet = Tweet.objects
+    sorted_list = sorted(all_tweet, key=attrgetter('date'))
+    tweet_1 = sorted_list[0].to_json(sorted_list[0])
+    tweet_2 = sorted_list[1].to_json(sorted_list[1])
+    tweet_3 = sorted_list[2].to_json(sorted_list[2])
+    tweet_4 = sorted_list[3].to_json(sorted_list[3])
+    tweet_5 = sorted_list[4].to_json(sorted_list[4])
+    tweet_6 = sorted_list[5].to_json(sorted_list[5])
+    
+    json_full=[tweet_1,tweet_2,tweet_3,tweet_4,tweet_5,tweet_6]
+    return jsonify(json_full)
 
 # Rota que faz uma requsição à API do Twitter e retorna os perfis que são verificados (100 por vez)
 @api.route('/perfis_deputados_verificados_100')

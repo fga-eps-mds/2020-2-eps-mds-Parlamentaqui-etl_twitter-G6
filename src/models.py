@@ -46,6 +46,7 @@ class Deputy(Document):
             'website':self.website
         }
 
+
 # class News(Document):
 #     id = IntField(primary_key=True)
 #     deputy_id = IntField()
