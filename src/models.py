@@ -19,7 +19,33 @@ class Deputy(Document):
     instagram_username = StringField()
     twitter_username = StringField()
     facebook_username = StringField()
-  
+    twitter_id = StringField()
+    website = StringField()
+
+    def to_json(self):
+        return{
+            'id':self.id,
+            'name':self.name,
+            'photo_url':self.photo_url,
+            'initial_legislature_id':self.initial_legislature_id,
+            'final_legislature_id':self.final_legislature_id,
+            'initial_legislature_year':self.initial_legislature_year,
+            'final_legislature_year':self.final_legislature_year,
+            'last_activity_date':self.last_activity_date,
+            'full_name':self.full_name,
+            'sex':self.sex,
+            'email':self.email,
+            'birth_date':self.birth_date,
+            'death_date':self.death_date,
+            'federative_unity':self.federative_unity,
+            'party':self.party,
+            'instagram_username':self.instagram_username,
+            'twitter_username':self.twitter_username,
+            'facebook_username':self.facebook_username,
+            'twitter_id':self.twitter_id,
+            'website':self.website
+        }
+
 
 # class News(Document):
 #     id = IntField(primary_key=True)
@@ -42,11 +68,11 @@ class Tweet(Document):
     twitter_username = StringField()
     date = DateTimeField()
 
-    def to_json(self, context):
-        return{
-            'tweet_id' : context.id,
-            'deputy_id':  context.deputy_id,
-            'name': context.name,
-            'twitter_username': context.twitter_username,
-            'date': context.date
+    def to_json(self):
+        return {
+            'tweet_id':self.tweet_id,
+            'deputy_id':self.deputy_id,
+            'name':self.name,
+            'twitter_username':self.twitter_username,
+            'date':self.date
         }
