@@ -179,6 +179,10 @@ def update_tweets():
                     date = datetime.strptime(str(tweet_json["created_at"][0:18]), '%Y-%m-%dT%H:%M:%S') if tweet_json["created_at"] is not None else None,
                 ).save()
 
+                #criar a lógica de atualização da ultima atividade recente do deputado em questão
+                deputy.last_activity_date = new_tweet.date
+                deputy.save()
+
     return "Updated tweets sucessfully. Now use /get_tweets to see the tweets"
 
 # Pega parâmetros de informações que serão trazidas dos tweets (versao dessa rota)
