@@ -207,15 +207,15 @@ def index():
     return jsonify(tweets)
 
 # Rota para pegar Tweets por id de Deputado
-@api.route('/get_tweets_id_deputy/<deputy_id>)
-def get_tweets_id_deputy(id):
-    deputy_tweet = []
+@api.route('/get_tweets_id_deputy/<deputy_id>')
+def get_tweets_id_deputy(deputy_id):
+    deputy_tweets = []
 
-    for deputy_id in Tweet.objetcs:
+    for item in Tweet.objects:
         if int(item.deputy_id) == int(deputy_id): 
-           deputy_tweet.append(item.to_json(item))
+           deputy_tweets.append(item.to_json())
     
-     return jsonify(deputy_tweet)
+    return jsonify(deputy_tweets)
    
 # Rota que deldeta todos os objetos Tweets salvos no BD
 @api.route('/delete_all_tweets')
