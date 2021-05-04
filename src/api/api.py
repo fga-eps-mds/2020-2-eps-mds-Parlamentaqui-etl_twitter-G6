@@ -21,7 +21,7 @@ def tweets():
 
     all_tweet = []
 
-    for item in sorted_list:
+    for item in sorted_list[0:4]:
         all_tweet.insert(0, item.to_json())
     
     return jsonify(all_tweet)
