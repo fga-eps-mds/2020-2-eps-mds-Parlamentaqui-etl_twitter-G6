@@ -172,7 +172,7 @@ def update_tweets():
                     continue
 
                 new_tweet = Tweet(
-                    tweet_id = tweet_json['id'],
+                    tweet_id = str(tweet_json['id']),
                     deputy_id = deputy.id,
                     name = deputy.name,
                     twitter_username = deputy.twitter_username,
