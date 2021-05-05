@@ -67,6 +67,7 @@ class Tweet(Document):
     name = StringField()
     twitter_username = StringField()
     date = DateTimeField()
+    source = StringField()
 
     def to_json(self):
         return {
@@ -74,5 +75,47 @@ class Tweet(Document):
             'deputy_id':self.deputy_id,
             'name':self.name,
             'twitter_username':self.twitter_username,
-            'date':self.date
+            'date':self.date,
+            'source':self.source
+        }
+
+class Proposicao(Document):
+    proposicao_id = IntField(primary_key=True)
+    id_deputado_autor = IntField(required=True)
+    uri = StringField()
+    descricao_tipo = StringField()
+    ementa = StringField(required=True)
+    ementa_detalhada = StringField()
+    keywords = StringField()
+    data_apresentacao = DateTimeField()
+    urlAutor = StringField()
+    tipoAutor = StringField()
+    nome_autor = StringField()
+    sigla_UF_autor = StringField()
+    tema_proposicao = StringField()
+    sigla_orgao = StringField() # Comeca aqui as informacoes do objeto de status
+    data_proposicao = DateTimeField() 
+    descricao_situacao = StringField()
+    despacho = StringField()
+    uri_relator = StringField()
+        
+    def to_json(self):
+        return{
+            'proposicao_id': self.proposicao_id,
+            'id_deputado_autor': self.id_deputado_autor,
+            'uri': self.uri,
+            'descricao_tipo': self.descricao_tipo,
+            'ementa': self.ementa,
+            'ementa_detalhada': self.ementa_detalhada,
+            'keywords': self.keywords,
+            'urlAutor': self.urlAutor,
+            'tipoAutor': self.tipoAutor,
+            'nome_autor': self.nome_autor,
+            'sigla_UF_autor': self.sigla_UF_autor,
+            'tema_proposicao': self.tema_proposicao,
+            'sigla_orgao': self.sigla_orgao,
+            'data_proposicao': self.data_proposicao,
+            'descricao_situacao': self.descricao_situacao,
+            'despacho': self.despacho,
+            'uri_relator': self.uri_relator
         }

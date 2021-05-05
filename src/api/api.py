@@ -161,15 +161,15 @@ def update_tweets():
             last_10_tweets_json = r.json()['data']
 
             for tweet_json in last_10_tweets_json:
-                need_create = True
+                # need_create = True
                 
-                for tweet_item in Tweet.objects:
-                    if int(tweet_item.tweet_id) == int(tweet_json['id']):
-                        need_create = False
-                        break
+                # for tweet_item in Tweet.objects:
+                #     if int(tweet_item.tweet_id) == int(tweet_json['id']):
+                #         need_create = False
+                #         break
 
-                if not need_create:
-                    continue
+                # if not need_create:
+                #     continue
 
                 new_tweet = Tweet(
                     tweet_id = str(tweet_json['id']),
@@ -177,6 +177,7 @@ def update_tweets():
                     name = deputy.name,
                     twitter_username = deputy.twitter_username,
                     date = datetime.strptime(str(tweet_json["created_at"][0:18]), '%Y-%m-%dT%H:%M:%S') if tweet_json["created_at"] is not None else None,
+                    source = tweet_json['text']
                 ).save()
 
                 #criar a lógica de atualização da ultima atividade recente do deputado em questão
@@ -212,3 +213,33 @@ def index():
 def delete_all_tweets():    
     Tweet.objects.all().delete()
     return "All tweets were deleted"
+
+
+@api.route('/get_all_propositions')
+def get_all_propositions():
+    propositions = []
+    for item in Proposicao.objects:
+        propositions.append(item.to_json())
+
+    return jsonify(propositions)
+
+
+@api.route('/tweets_by_proposition_id/<id>')
+def tweets_by_proposition_id(id):
+    proposition = {}
+
+    for item in Proposicao.objects:
+        if int(item.proposicao_id) == id:
+            propositions = item.to_json()
+            break
+    
+    if not proposition:
+        return "Proposição nao encontrada."
+
+    #temos nossa proposição, agora verificar quais tweets do banco falam sobre ela.
+    proposition_tweets = []
+
+    for item in Tweet.objects:
+        break
+
+    return "Done"
