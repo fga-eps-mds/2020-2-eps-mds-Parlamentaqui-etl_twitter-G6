@@ -224,22 +224,67 @@ def get_all_propositions():
     return jsonify(propositions)
 
 
-@api.route('/tweets_by_proposition_id/<id>')
+@api.route('/update_tweets_propositions')
+def update_tweets_propositions():
+    
+    for item in Proposicao.objects:
+        tweets_list = tweets_by_proposition_id(int(item.proposicao_id))
+        
+        for tweet in tweets_list:
+            PropositionTweet(
+                tweet_id = str(tweet["id"]),
+                author_id = tweet["author_id"],
+                proposition_id = item.proposicao_id,
+                date = datetime.strptime(str(tweet["created_at"][0:18]), '%Y-%m-%dT%H:%M:%S') if tweet["created_at"] is not None else None,
+                source = tweet["text"]
+            ).save()
+
+    return "Done"
+
+@api.route('/get_all_tweets_propositions')
+def get_all_tweets_propositions():
+    all = []
+    for item in PropositionTweet.objects:
+        all.append(item.to_json())
+
+    return jsonify(all)
+
+@api.route('/get_tweets_by_proposition_id/<id>')
+def get_tweets_by_proposition_id(id):
+    for item in PropositionTweet.objects:
+        if int(item.id) == int(id):
+            return jsonihy(item.to_json())
+
+    return "None"
+
+@api.route('/delete_all_tweets_propositions')
+def delete_all_tweets_propositions():
+    PropositionTweet.objects.all().delete()
+    return "All propositions tweets were deleted"
+
 def tweets_by_proposition_id(id):
     proposition = {}
 
     for item in Proposicao.objects:
-        if int(item.proposicao_id) == id:
-            propositions = item.to_json()
+        if int(item.proposicao_id) == int(id):
+            proposition = item.to_json()
             break
-    
-    if not proposition:
-        return "Proposição nao encontrada."
 
-    #temos nossa proposição, agora verificar quais tweets do banco falam sobre ela.
+    if proposition == {}:
+        return {}
+
     proposition_tweets = []
+    
+    proposition_number = str(proposition["numero"]) + "/" + str(proposition["ano"])
+    key = proposition["sigla_tipo"].replace(" ", "_") + "_" + proposition_number
 
-    for item in Tweet.objects:
-        break
+    params = get_params_2()
+    r = requests.get(f'https://api.twitter.com/2/tweets/search/recent?query={key}', headers=auth_header, params=params)
+    
+    if not r:
+        return {}
+    
+    if not "data" in r.json():
+        return {}
 
-    return "Done"
+    return r.json()["data"]

@@ -79,6 +79,22 @@ class Tweet(Document):
             'source':self.source
         }
 
+class PropositionTweet(Document):
+    tweet_id = StringField(primary_key=True)
+    author_id = StringField()
+    proposition_id = IntField()
+    date = DateTimeField()
+    source = StringField()
+
+    def to_json(self):
+        return {
+            'tweet_id':self.tweet_id,
+            'author_id':self.author_id,
+            'date':self.date,
+            'proposition_id':self.proposition_id,
+            'source':self.source
+        }
+
 class Proposicao(Document):
     proposicao_id = IntField(primary_key=True)
     id_deputado_autor = IntField(required=True)
@@ -98,6 +114,10 @@ class Proposicao(Document):
     descricao_situacao = StringField()
     despacho = StringField()
     uri_relator = StringField()
+    sigla_tipo = StringField()
+    cod_tipo = IntField()
+    numero = IntField()
+    ano = IntField()
         
     def to_json(self):
         return{
@@ -117,5 +137,9 @@ class Proposicao(Document):
             'data_proposicao': self.data_proposicao,
             'descricao_situacao': self.descricao_situacao,
             'despacho': self.despacho,
-            'uri_relator': self.uri_relator
+            'uri_relator': self.uri_relator,
+            'sigla_tipo' : self.sigla_tipo,
+            'cod_tipo' : self.cod_tipo,
+            'numero' : self.numero,
+            'ano' : self.ano
         }
