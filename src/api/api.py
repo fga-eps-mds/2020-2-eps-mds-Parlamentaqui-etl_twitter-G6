@@ -251,11 +251,12 @@ def get_all_tweets_propositions():
 
 @api.route('/get_tweets_by_proposition_id/<id>')
 def get_tweets_by_proposition_id(id):
+    tweets = []
     for item in PropositionTweet.objects:
         if int(item.id) == int(id):
-            return jsonihy(item.to_json())
+            tweets.append(item.to_json())
 
-    return "None"
+    return jsonify(tweets)
 
 @api.route('/delete_all_tweets_propositions')
 def delete_all_tweets_propositions():
