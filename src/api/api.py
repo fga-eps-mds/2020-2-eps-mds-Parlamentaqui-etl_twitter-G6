@@ -231,6 +231,9 @@ def update_tweets_propositions():
         tweets_list = tweets_by_proposition_id(int(item.proposicao_id))
         
         for tweet in tweets_list:
+            if "RT " in tweet["text"]:
+                continue
+                
             PropositionTweet(
                 tweet_id = str(tweet["id"]),
                 author_id = tweet["author_id"],
