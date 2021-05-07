@@ -253,7 +253,7 @@ def get_all_tweets_propositions():
 def get_tweets_by_proposition_id(id):
     tweets = []
     for item in PropositionTweet.objects:
-        if int(item.id) == int(id):
+        if int(item.proposition_id) == int(id):
             tweets.append(item.to_json())
 
     return jsonify(tweets)
