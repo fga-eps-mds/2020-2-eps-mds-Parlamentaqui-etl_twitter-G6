@@ -283,7 +283,7 @@ def tweets_by_proposition_id(id):
     key = proposition["sigla_tipo"].replace(" ", "_") + "_" + proposition_number
 
     params = get_params_2()
-    r = requests.get(f'https://api.twitter.com/2/tweets/search/recent?query={key}', headers=auth_header, params=params)
+    r = requests.get(f'https://api.twitter.com/2/tweets/search/recent?query={key}&max_results=100', headers=auth_header, params=params)
     
     if not r:
         return {}
