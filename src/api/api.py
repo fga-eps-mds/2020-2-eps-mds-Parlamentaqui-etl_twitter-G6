@@ -17,7 +17,7 @@ auth_header = {"Authorization": "Bearer {}".format(BEARER_TOKEN_TWITTER)}
 @api.route('/tweets')
 def tweets():
     sorted_list = []
-    sorted_list = sorted(Tweet.objects, key=attrgetter('date'))
+    sorted_list = sorted(Tweet.objects, reverse=True, key=attrgetter('date'))
 
     all_tweet = []
 
@@ -120,7 +120,9 @@ def get_all_deputies():
 @api.route('/get_all_tweets')
 def index():
     tweets = []
-    for item in Tweet.objects:
+    sorted_list = sorted(Tweet.objects, reverse=True, key=attrgetter('date'))
+
+    for item in sorted_list:
         tweets.append(item.to_json())
 
     return jsonify(tweets)
