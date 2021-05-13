@@ -19,13 +19,13 @@ class EtlTests(unittest.TestCase):
         self.context.push()
         self.client = self.app.test_client()
 
-    def test_index(self):
-        request = self.client.get(url_for('/'))
-        self.assertEqual(200 , request.status_code)
-
     def test_index_status(self):
         request = self.client.get(url_for('/'))
         self.assertEqual(200 , request.status_code)
+        
+    def test_index(self):
+        request = self.client.get(url_for('/'))
+        self.assertEqual('ETL Twitter' , request.data.decode())
 
     # @requests_mock.Mocker()
     # def test_perfis_deputados_verificados_100(self, request_mock):
@@ -89,7 +89,6 @@ class EtlTests(unittest.TestCase):
         request = self.client.get(url_for('api.delete_all_tweets'))
         self.assertNotEqual(data_expected , request.data.decode())
     
-
     def tearDown(self):
         self.context.pop()
 
