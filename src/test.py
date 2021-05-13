@@ -27,8 +27,38 @@ class EtlTests(unittest.TestCase):
         request = self.client.get(url_for('/'))
         self.assertEqual(200 , request.status_code)
 
+    @requests_mock.Mocker()
+    def test_perfis_deputados_verificados_100(self, request_mock):
+        url = (f"https://api.twitter.com/2/users/by?{usernames}&user.fields=verified,url")
+        data = { }
+
+        request_mock.get(url, json=data)
+        request = self.client.get(url_for('api.perfis_deputados_verificados_100'))
+        self.assertEqual(200 , request.status_code)
+
+    @requests_mock.Mocker()
+    def test_update_twitter_accounts(self, request_mock):
+        url = (f"https://api.twitter.com/2/users/by?usernames={usernames_to_found}&user.fields=verified,url")
+        data = { }
+        data_expected = 'Done. Use url api/get_all_deputies for get all the deputies in db'
+
+        request_mock.get(url, json=data)
+        request = self.client.get(url_for('api.update_twitter_accounts'))
+        self.assertEqual(200 , request.status_code)
+        self.assertEqual(data_expected , request.data.decode())
+
+    def test_api_update_tweets(self):
+        data_expected = 'Updated tweets sucessfully. Now use /get_all_tweets to see the tweets'
+
+        request = self.client.get(url_for('api.update_tweets'))
+        self.assertEqual(data_expected , request.data.decode())
+
+    def test_get_all_deputies_status(self):
+        request = self.client.get(url_for('api.get_all_deputies'))
+        self.assertEqual(200 , request.status_code)
+
     def tearDown(self):
         self.context.pop()
 
-# if __name__=='__main__':
-#     unittest.main()
+if __name__=='__main__':
+    unittest.main()
