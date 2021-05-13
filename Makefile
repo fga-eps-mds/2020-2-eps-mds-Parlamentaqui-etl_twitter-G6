@@ -6,3 +6,6 @@ start-prod:
 
 rebuild:
 		docker-compose up --build
+
+test:
+	sudo docker-compose run prlmntq_etl_twitter python  src/test.py
