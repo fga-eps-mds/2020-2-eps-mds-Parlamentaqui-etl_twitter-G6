@@ -165,7 +165,8 @@ def update_tweets_propositions():
 @api.route('/get_all_tweets_propositions')
 def get_all_tweets_propositions():
     all = []
-    for item in PropositionTweet.objects:
+    sorted_list = sorted(PropositionTweet.objects, reverse=True, key=attrgetter('date'))
+    for item in sorted_list:
         all.append(item.to_json())
 
     return jsonify(all)
@@ -173,7 +174,8 @@ def get_all_tweets_propositions():
 @api.route('/get_tweets_by_proposition_id/<id>')
 def get_tweets_by_proposition_id(id):
     tweets = []
-    for item in PropositionTweet.objects:
+    sorted_list = sorted(PropositionTweet.objects, reverse=True, key=attrgetter('date'))
+    for item in sorted_list:
         if int(item.proposition_id) == int(id):
             tweets.append(item.to_json())
 
@@ -185,7 +187,7 @@ def delete_all_tweets_propositions():
     return "All propositions tweets were deleted"
 
 def tweets_by_proposition_id(id):
-    proposition = Proposicao.objects(proposition_id=id).first()
+    proposition = Proposicao.objects(proposicao_id=id).first()
     if not proposition:
         return {}
 
