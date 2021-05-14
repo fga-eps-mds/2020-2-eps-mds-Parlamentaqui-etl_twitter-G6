@@ -206,3 +206,14 @@ def tweets_by_proposition_id(id):
         return {}
 
     return r.json()["data"]
+
+
+@api.route('/get_tweets_id_deputy/<id>')
+def get_tweets_id_deputy(id):
+    tweets = []
+    sorted_list = sorted(Tweet.objects, reverse=True, key=attrgetter('date'))
+    for item in sorted_list:
+        if int(item.deputy_id) == int(id):
+            tweets.append(item.to_json())
+
+    return jsonify(tweets)
