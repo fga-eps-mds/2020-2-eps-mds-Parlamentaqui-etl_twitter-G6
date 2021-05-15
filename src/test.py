@@ -5,9 +5,6 @@ from flask import Flask
 import requests_mock
 import os
 
-# Token que autoriza a busca por dados na API do Twitter pelo protocolo OAuth 2.0 (somente infos publicas no Twitter)
-auth_header = {"Authorization": "Bearer {}".format(BEARER_TOKEN_TWITTER)}
-
 DB_USERNAME = os.getenv('DB_USERNAME')
 DB_PASSWORD = os.getenv('DB_PASSWORD')
 DB_HOST = os.getenv('DB_HOST')
