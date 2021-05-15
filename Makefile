@@ -8,4 +8,4 @@ rebuild:
 		docker-compose up --build
 
 test:
-	sudo docker-compose run prlmntq_etl_twitter python  src/test.py
+	sudo docker run prlmntq_etl_twitter sh -c 'python3  src/test.py'
