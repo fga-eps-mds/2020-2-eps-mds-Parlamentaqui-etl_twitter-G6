@@ -41,5 +41,76 @@ class AppTests(unittest.TestCase):
         self.context.pop()
 
 
+class EtlApiTests(unittest.TestCase):
+
+    connect(DB_NAME, host=f'mongodb://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?authSource=admin')
+
+    # @requests_mock.Mocker()
+    # def test_perfis_deputados_verificados_100(self, request_mock):
+    #     url = (f"https://api.twitter.com/2/users/by?{usernames}&user.fields=verified,url")
+    #     data = { }
+
+    #     request_mock.get(url, json=data)
+    #     request = self.client.get('/api/perfis_deputados_verificados_100')
+    #     self.assertEqual(200 , request.status_code)
+
+    # @requests_mock.Mocker()
+    # def test_update_twitter_accounts(self, request_mock):
+    #     url = (f"https://api.twitter.com/2/users/by?usernames={usernames_to_found}&user.fields=verified,url")
+    #     data = { }
+    #     data_expected = 'Done. Use url api/get_all_deputies for get all the deputies in db'
+
+    #     request_mock.get(url, json=data)
+    #     request = self.client.get('/api/update_twitter_accounts')
+    #     self.assertEqual(200 , request.status_code)
+    #     self.assertEqual(data_expected , request.data.decode())
+
+    def test_api_update_tweets(self):
+        data_expected = 'Updated tweets sucessfully. Now use /get_all_tweets to see the tweets'
+
+        request = self.client.get('/api/update_tweets')
+        self.assertEqual(data_expected , request.data.decode())
+
+    def test_get_all_deputies_status(self):
+        request = self.client.get('/api/get_all_deputies')
+        self.assertEqual(200 , request.status_code)
+
+    def test_get_all_tweets_status(self):
+        request = self.client.get('/api/get_all_tweets')
+        self.assertEqual(200 , request.status_code)
+
+    def test_api_delete_all_tweets_propositions(self):
+        data_expected = 'All propositions tweets were deleted'
+
+        request = self.client.get('/api/delete_all_tweets_propositions')
+        self.assertEqual(data_expected , request.data.decode())
+
+    def test_api_get_all_tweets_propositions(self):
+        data_not_expected = []
+
+        request = self.client.get('/api/get_all_tweets_propositions')
+        self.assertEqual(200 , request.status_code)
+        self.assertNotEqual(data_not_expected , request.data.decode())
+
+    def test_api_update_tweets_propositions(self):
+        data_expected = 'Done'
+
+        request = self.client.get('/api/update_tweets_propositions')
+        self.assertEqual(data_expected , request.data.decode())
+
+    def test_get_all_propositions_status(self):
+        request = self.client.get('/api/get_all_propositions')
+        self.assertEqual(200 , request.status_code)
+
+    def test_delete_all_tweets_status(self):
+        data_expected = 'All tweets were deleted'
+
+        request = self.client.get('/api/delete_all_tweets')
+        self.assertEqual(data_expected , request.data.decode())
+    
+    def tearDown(self):
+        self.context.pop()
+
+
 if __name__=='__main__':
     unittest.main()
