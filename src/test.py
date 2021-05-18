@@ -70,12 +70,12 @@ class EtlApiTests(unittest.TestCase):
         request = self.client.get('/api/update_twitter_accounts')
         self.assertEqual(200 , request.status_code)
         self.assertEqual(data_expected , request.data.decode())
-    
 
     def test_api_update_tweets(self):
         data_expected = 'Updated tweets sucessfully. Now use /get_all_tweets to see the tweets'
 
         request = self.client.get('/api/update_tweets')
+        self.assertEqual(200 , request.status_code)
         self.assertEqual(data_expected , request.data.decode())
 
     def test_get_all_deputies_status(self):
@@ -94,6 +94,7 @@ class EtlApiTests(unittest.TestCase):
         data_expected = 'All propositions tweets were deleted'
 
         request = self.client.get('/api/delete_all_tweets_propositions')
+        self.assertEqual(200 , request.status_code)
         self.assertEqual(data_expected , request.data.decode())
 
     def test_api_get_all_tweets_propositions(self):
@@ -108,6 +109,7 @@ class EtlApiTests(unittest.TestCase):
 
         request = self.client.get('/api/update_tweets_propositions')
         self.assertEqual(data_expected , request.data.decode())
+        self.assertEqual(200 , request.status_code)
 
     def test_get_all_propositions_status(self):
         request = self.client.get('/api/get_all_propositions')
@@ -117,6 +119,7 @@ class EtlApiTests(unittest.TestCase):
         data_expected = 'All tweets were deleted'
 
         request = self.client.get('/api/delete_all_tweets')
+        self.assertEqual(200 , request.status_code)
         self.assertEqual(data_expected , request.data.decode())
 
     def test_get_tweets_by_proposition_id_status(self):
